@@ -1,6 +1,23 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  daisyui:{
+    themes:[
+      {
+        myTheme: {
+          "primary": "#F6DE58",
+          "secondary": "#cc9955",
+          "accent": "#4f46e5",
+          "neutral": "#6b7280",
+          "base-100": "#25282A",
+          "info": "#3b82f6",
+          "success": "#4ade80",
+          "warning": "#eb810f",
+          "error": "#f75058",
+        }
+      }
+    ]
+  },
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -8,13 +25,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-      },
+      colors: {
+        "accent-background" : "#474B4F"
+      }
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 }
 export default config
