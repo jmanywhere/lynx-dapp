@@ -2,11 +2,34 @@
 
 import type { ReactNode } from "react";
 import { Provider } from "jotai";
-import { WagmiConfig, mainnet } from "wagmi";
+import { WagmiConfig, mainnet, type Chain } from "wagmi";
 
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/react";
 
-const chains = [mainnet];
+const devNet = {
+  id: 1,
+  name: "Development Network",
+  network: "devnet",
+  nativeCurrency: {
+    decimals: 18,
+    name: "Ether",
+    symbol: "ETH",
+  },
+  rpcUrls: {
+    public: {
+      http: [
+        "https://rpc.tenderly.co/fork/ce303b9b-3f43-43bc-817c-6c548d00745d",
+      ],
+    },
+    default: {
+      http: [
+        "https://rpc.tenderly.co/fork/ce303b9b-3f43-43bc-817c-6c548d00745d",
+      ],
+    },
+  },
+} as const satisfies Chain;
+
+const chains = [mainnet, devNet];
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 if (!projectId) throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import LogoImg from "../../public/logo.png";
+import DividendCard from "@/components/DividendCard";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
         width={700}
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none"
       />
-      <div>Actual content here</div>
+      <DividendCard />
     </main>
   );
 }

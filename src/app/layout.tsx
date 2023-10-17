@@ -6,7 +6,7 @@ import Web3Providers from "./ClientProviders";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lynx Token",
+  title: "Lynx Rewards",
   description:
     "Lynx Tech is a Web3 project development company committed to enhancing everyones Web3 experience.",
 };
