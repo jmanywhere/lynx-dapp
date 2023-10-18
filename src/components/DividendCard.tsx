@@ -5,6 +5,7 @@ import { readableBigNumber } from "@/utils/big";
 import { useImmer } from "use-immer";
 import {
   erc20ABI,
+  useAccount,
   useContractRead,
   useContractReads,
   useContractWrite,
@@ -13,7 +14,7 @@ import {
 } from "wagmi";
 import LynxProfitShareABI from "@/data/abi/ProfitShare";
 import LynxTokenABI from "@/data/abi/LynxToken";
-import { maxUint256, parseEther } from "viem";
+import { maxUint256, parseEther, zeroAddress } from "viem";
 import classNames from "classnames";
 import compact from "lodash/compact";
 import { useState } from "react";
@@ -45,13 +46,14 @@ const DividendCard = () => {
   }>(selectedIdsInititalValues);
 
   const [page, setPage] = useState<number>(0);
+  const { address } = useAccount();
   const { data: lynxInfo } = useContractReads({
     contracts: [
       {
         address: LynxToken,
         abi: erc20ABI,
         functionName: "balanceOf",
-        args: ["0xb612878AB836f549fcB42B004416346ab0d83d24"],
+        args: [address || zeroAddress],
       },
       {
         address: LynxToken,
@@ -65,7 +67,7 @@ const DividendCard = () => {
     address: LynxProfitShare,
     abi: LynxProfitShareABI,
     functionName: "getAllUserParticipatingSnapshots",
-    args: ["0xb612878AB836f549fcB42B004416346ab0d83d24"],
+    args: [address || zeroAddress],
   });
 
   const filteredData = compact(
