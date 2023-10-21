@@ -10,6 +10,7 @@ import {
   useContractReads,
   useContractWrite,
   usePrepareContractWrite,
+  useTransaction,
   useWaitForTransaction,
 } from "wagmi";
 import LynxProfitShareABI from "@/data/abi/ProfitShare";
@@ -19,6 +20,9 @@ import classNames from "classnames";
 import compact from "lodash/compact";
 import { useState } from "react";
 import { BiSolidChevronLeft, BiSolidChevronRight } from "react-icons/bi";
+import SnapshotsTaken from "@/../public/snapshots.json";
+import { getTier } from "@/utils/manualDistribution";
+import { AiFillCloseCircle } from "react-icons/ai";
 
 type SnapshotPaginationsType = Array<
   Array<{
@@ -26,7 +30,6 @@ type SnapshotPaginationsType = Array<
     qualifier: bigint;
     verification: bigint;
     amount: bigint;
-    claimable: boolean;
   }>
 >;
 
@@ -63,11 +66,18 @@ const DividendCard = () => {
     ],
   });
 
+  const snapshotIds = new Array(
+    parseInt((lynxInfo?.[1].result || 0n).toString())
+  )
+    .fill(null)
+    .map((_, index) => BigInt(index));
+
   const { data } = useContractRead({
     address: LynxProfitShare,
     abi: LynxProfitShareABI,
-    functionName: "getAllUserParticipatingSnapshots",
-    args: [address || zeroAddress],
+    functionName: "getIndexesOfUser",
+    args: [snapshotIds],
+    account: address || zeroAddress,
   });
 
   const filteredData = compact(
@@ -77,8 +87,10 @@ const DividendCard = () => {
         snapId: BigInt(index),
         qualifier: id,
         verification: data?.[0]?.[index] || maxUint256,
-        amount: data?.[2]?.[index] || 0n,
-        claimable: Boolean(data?.[3]?.[index] || false),
+        amount:
+          BigInt(
+            SnapshotsTaken[index].input.balances[parseInt(id.toString())]
+          ) || 0n,
       };
     }) || []
   ).reverse();
@@ -90,9 +102,8 @@ const DividendCard = () => {
     },
     []
   );
-  console.log({ lynxInfo, data, selectedIds });
 
-  const { config: claimConfig, error: configError } = usePrepareContractWrite({
+  const { config: claimConfig } = usePrepareContractWrite({
     address: LynxProfitShare,
     abi: LynxProfitShareABI,
     functionName: "claimDivs",
@@ -152,8 +163,7 @@ const DividendCard = () => {
         <tbody>
           {paginatedData?.[page]?.map((snapData, index: number) => {
             if (!snapData) return null;
-            const { qualifier, verification, snapId, amount, claimable } =
-              snapData;
+            const { qualifier, verification, snapId, amount } = snapData;
             const indexNum = Number(snapId);
 
             return (
@@ -162,13 +172,9 @@ const DividendCard = () => {
                 index={indexNum}
                 amount={amount || 0n}
                 checked={selectedIds.ids.indexOf(snapId) > -1}
-                claimable={
-                  // (lynxInfo?.[1]?.result ?? maxUint256)
-                  8 > snapId + 1n && claimable
-                }
-                claimed={!claimable}
+                claimable={(lynxInfo?.[1]?.result ?? maxUint256) > snapId + 1n}
+                verificationIndex={snapData.verification}
                 selectId={(claimable) => {
-                  console.log("click", snapId);
                   setSelectedIds((draft) => {
                     const idIndex = draft.ids.indexOf(snapId);
                     if (idIndex > -1) {
@@ -257,34 +263,41 @@ const DivRow = (props: {
   index: number;
   amount: bigint;
   claimable: boolean;
-  claimed: Boolean;
   checked: boolean;
+  verificationIndex?: bigint;
   selectId: (amount: bigint) => void;
 }) => {
-  const { id, index, amount, checked, claimable, selectId, claimed } = props;
-  const { data: snapshotInfo } = useContractRead({
-    address: LynxProfitShare,
-    abi: LynxProfitShareABI,
-    functionName: "snapshots",
-    args: [BigInt(index)],
+  const { address } = useAccount();
+  const { id, index, amount, checked, claimable, selectId, verificationIndex } =
+    props;
+  const { data: allData } = useContractReads({
+    contracts: [
+      {
+        address: LynxProfitShare,
+        abi: LynxProfitShareABI,
+        functionName: "snapshots",
+        args: [BigInt(index)],
+      },
+      {
+        address: LynxProfitShare,
+        abi: LynxProfitShareABI,
+        functionName: "claimed",
+        args: [address || zeroAddress, id],
+      },
+    ],
   });
-  // const snapshotInfo: [
-  //   bigint,
-  //   bigint,
-  //   bigint,
-  //   bigint,
-  //   bigint,
-  //   bigint,
-  //   boolean
-  // ] = [
-  //   1369126860940559166987906n, // Total Tier1
-  //   1027756782166990553363769n, // Total Tier2
-  //   0n, // tier1 claimed
-  //   0n, // tier2 claimed
-  //   219117752020n, // tier1 per token
-  //   194598569885n, // tier2 per token
-  //   false, // full Claim
-  // ];
+  const claimed = allData?.[1]?.result;
+
+  const currentTier = getTier(amount.toString());
+  const verificationTier = getTier(
+    SnapshotsTaken[index + 1]?.input.balances[
+      parseInt(verificationIndex?.toString() || "0")
+    ] || "0"
+  );
+
+  const fullyClaimable =
+    !claimed && claimable && verificationTier === currentTier;
+  const snapshotInfo = allData?.[0]?.result;
   const claimableAmount =
     amount >= parseEther("50000")
       ? snapshotInfo?.[4] || 0n
@@ -302,25 +315,34 @@ const DivRow = (props: {
         <span className=" text-xs text-white/90">ETH</span>
       </td>
       <td>
-        <input
-          type="checkbox"
-          className={classNames(
-            "checkbox",
-            claimed
-              ? "checkbox-success pointer-events-none"
-              : claimable
-              ? "checkbox-primary"
-              : "hidden"
-          )}
-          checked={checked || Boolean(claimed)}
-          onChange={
-            claimed
-              ? () => {
-                  console.log("false", claimed, index);
-                }
-              : () => selectId(rewardAmount)
-          }
-        />
+        {claimable && !claimed && !fullyClaimable ? (
+          <div
+            className="tooltip"
+            data-tip={`Same Tier: ${currentTier === verificationTier}`}
+          >
+            <AiFillCloseCircle className="text-red-500 text-xl" />
+          </div>
+        ) : (
+          <input
+            type="checkbox"
+            className={classNames(
+              "checkbox",
+              claimed
+                ? "checkbox-success pointer-events-none"
+                : fullyClaimable
+                ? "checkbox-primary"
+                : "hidden"
+            )}
+            checked={checked || Boolean(claimed)}
+            onChange={
+              claimed
+                ? () => {
+                    console.log("false", claimed, index);
+                  }
+                : () => selectId(rewardAmount)
+            }
+          />
+        )}
       </td>
     </tr>
   );
