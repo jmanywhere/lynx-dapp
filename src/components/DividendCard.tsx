@@ -56,7 +56,7 @@ const DividendCard = () => {
         address: LynxToken,
         abi: erc20ABI,
         functionName: "balanceOf",
-        args: ["0xfbdC4406DF93D63a55a42EBf14728757e70c3EB7" || zeroAddress],
+        args: [address || zeroAddress],
       },
       {
         address: LynxToken,
@@ -77,7 +77,7 @@ const DividendCard = () => {
     abi: LynxProfitShareABI,
     functionName: "getIndexesOfUser",
     args: [snapshotIds],
-    account: "0xfbdC4406DF93D63a55a42EBf14728757e70c3EB7" || zeroAddress,
+    account: address || zeroAddress,
   });
 
   const filteredData = compact(
@@ -282,7 +282,7 @@ const DivRow = (props: {
         address: LynxProfitShare,
         abi: LynxProfitShareABI,
         functionName: "claimed",
-        args: ["0xfbdC4406DF93D63a55a42EBf14728757e70c3EB7" || zeroAddress, id],
+        args: [address || zeroAddress, id],
       },
     ],
   });
