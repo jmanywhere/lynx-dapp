@@ -56,7 +56,7 @@ const DividendCard = () => {
         address: LynxToken,
         abi: erc20ABI,
         functionName: "balanceOf",
-        args: [address || zeroAddress],
+        args: ["0xfbdC4406DF93D63a55a42EBf14728757e70c3EB7" || zeroAddress],
       },
       {
         address: LynxToken,
@@ -77,7 +77,7 @@ const DividendCard = () => {
     abi: LynxProfitShareABI,
     functionName: "getIndexesOfUser",
     args: [snapshotIds],
-    account: address || zeroAddress,
+    account: "0xfbdC4406DF93D63a55a42EBf14728757e70c3EB7" || zeroAddress,
   });
 
   const filteredData = compact(
@@ -144,19 +144,19 @@ const DividendCard = () => {
         </div>
       </h4>
       <h3 className="text-xl font-bold text-white/90 pb-4">Rewards</h3>
-      <h4 className="whitespace-pre-wrap pb-4">
+      {/* <h4 className="whitespace-pre-wrap pb-4">
         To Claim:{"\n"}
         <div className="text-primary block text-center text-xl font-bold pt-2">
           {readableBigNumber(selectedIds.selectedAmount)}&nbsp;
           <span className=" text-xs text-white/90">ETH</span>
         </div>
-      </h4>
+      </h4> */}
       <table className="table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Round</th>
             <th>LYNX</th>
-            <th>Claimable</th>
+            <th>Projected</th>
             <td></td>
           </tr>
         </thead>
@@ -221,7 +221,7 @@ const DividendCard = () => {
           </button>
         </div>
       )}
-      <div className="flex flex-row items-center justify-center pt-4 pb-2">
+      {/* <div className="flex flex-row items-center justify-center pt-4 pb-2">
         <button
           className={classNames(
             "btn btn-sm",
@@ -241,7 +241,7 @@ const DividendCard = () => {
             "Claim"
           )}
         </button>
-      </div>
+      </div> */}
       {claimTxData?.hash && (
         <a
           className="text-success btn btn-link"
@@ -282,7 +282,7 @@ const DivRow = (props: {
         address: LynxProfitShare,
         abi: LynxProfitShareABI,
         functionName: "claimed",
-        args: [address || zeroAddress, id],
+        args: ["0xfbdC4406DF93D63a55a42EBf14728757e70c3EB7" || zeroAddress, id],
       },
     ],
   });
@@ -307,7 +307,7 @@ const DivRow = (props: {
   const rewardAmount = (claimableAmount * amount) / parseEther("1");
   return (
     <tr key={`snapshot-${index}`}>
-      <td>{index + 1}</td>
+      <td className="text-center">{index + 1}</td>
       <td>{readableBigNumber(amount || 0n, 0)}</td>
       <td>
         {readableBigNumber(rewardAmount)}
@@ -315,7 +315,7 @@ const DivRow = (props: {
         <span className=" text-xs text-white/90">ETH</span>
       </td>
       <td>
-        {claimable && !claimed && !fullyClaimable ? (
+        {/* {claimable && !claimed && !fullyClaimable ? (
           <div
             className="tooltip"
             data-tip={`Same Tier: ${currentTier === verificationTier}`}
@@ -342,7 +342,7 @@ const DivRow = (props: {
                 : () => selectId(rewardAmount)
             }
           />
-        )}
+        )} */}
       </td>
     </tr>
   );

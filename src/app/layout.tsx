@@ -35,7 +35,7 @@ import { IoMenuSharp } from "react-icons/io5";
 
 const Header = () => {
   return (
-    <header className="pl-4 md:px-8 lg:px-12 py-6 sticky top-0 bg-base-100 z-30">
+    <header className="pl-4 md:px-8 lg:px-12 py-6 sticky top-0 bg-transparent z-30">
       <nav className="flex flex-row justify-between items-center">
         <Image src={LogoImage} alt="Lynx Tech Logo" width={50} height={50} />
         <a
